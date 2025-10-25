@@ -5,11 +5,12 @@ import type { Component, ComponentType, DragState, PanState, GridState } from '.
 export const GRID_SIZE = 100;
 export const CELL_SIZE = 10;
 export const SVG_SIZE = GRID_SIZE * CELL_SIZE;
+export const REAL_CELL_SIZE_M = 0.6; // Each grid cell is 0.6m x 0.6m in real world
 
 // Grid state store
 function createGridStore() {
-  // Calculate initial translation to center the grid at 100% zoom
-  const initialScale = 1.0;
+  // Calculate initial translation to center the grid at 190% zoom
+  const initialScale = 1.9;
   const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1920;
   const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 1080;
   const scaledGridSize = SVG_SIZE * initialScale;
@@ -113,6 +114,9 @@ export const spaceKeyPressed = writable<boolean>(false);
 
 // Delete mode state
 export const deleteMode = writable<boolean>(false);
+
+// Smart guides toggle state
+export const showGuides = writable<boolean>(true);
 
 // Derived store: Get component at grid position
 export const getComponentAtPosition = derived(

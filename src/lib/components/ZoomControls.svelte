@@ -1,6 +1,8 @@
 <script lang="ts">
-  import { gridStore } from "$lib/stores/gridStore";
+  import { gridStore, showGuides } from "$lib/stores/gridStore";
   import { Button } from "$lib/components/ui/button";
+  import { Toggle } from "$lib/components/ui/toggle";
+  import { Ruler } from "lucide-svelte";
 
   function zoomIn() {
     const newScale = Math.min(5, $gridStore.scale + 0.1);
@@ -14,6 +16,10 @@
 
   function resetZoom() {
     gridStore.resetView();
+  }
+
+  function toggleGuides() {
+    showGuides.update(val => !val);
   }
 
   let zoomPercentage = $derived(Math.round($gridStore.scale * 100));
@@ -66,6 +72,19 @@
     >
       <span aria-hidden="true">⟲</span>
     </Button>
+
+    <!-- Divider -->
+    <div class="h-px w-8 bg-gray-300"></div>
+
+    <!-- Toggle Guides Button -->
+    <Toggle
+      pressed={$showGuides}
+      onPressedChange={toggleGuides}
+      aria-label="Toggle smart guides"
+      class="w-10 h-10 p-0 flex items-center justify-center rounded-full transition-colors data-[state=on]:bg-blue-100 data-[state=on]:text-blue-600 bg-gray-100 hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+    >
+      <Ruler size={18} />
+    </Toggle>
   </div>
 </div>
 

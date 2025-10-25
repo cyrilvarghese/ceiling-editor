@@ -6,9 +6,11 @@
     panState,
     spaceKeyPressed,
     deleteMode,
+    showGuides,
     GRID_SIZE,
     CELL_SIZE,
     SVG_SIZE,
+    REAL_CELL_SIZE_M,
   } from "$lib/stores/gridStore";
   import {
     getGridCellFromMouse,
@@ -43,7 +45,13 @@
     `translate(${$gridStore.translateX}px, ${$gridStore.translateY}px) scale(${$gridStore.scale})`,
   );
   let cursorStyle = $derived(
-    $panState.isPanning ? "grabbing" : $spaceKeyPressed ? "grab" : $deleteMode ? "crosshair" : "default",
+    $panState.isPanning
+      ? "grabbing"
+      : $spaceKeyPressed
+        ? "grab"
+        : $deleteMode
+          ? "crosshair"
+          : "default",
   );
 
   // Handle mousemove with requestAnimationFrame throttling
@@ -57,7 +65,7 @@
     requestAnimationFrame(() => {
       const pos = getGridCellFromMouse(
         { clientX: lastMouseX, clientY: lastMouseY } as MouseEvent,
-        svgContainer,
+        svgContainer as unknown as HTMLElement,
         $gridStore.translateX,
         $gridStore.translateY,
         $gridStore.scale,
@@ -107,7 +115,7 @@
 
     const pos = getGridCellFromMouse(
       event,
-      svgContainer,
+      svgContainer as unknown as HTMLElement,
       $gridStore.translateX,
       $gridStore.translateY,
       $gridStore.scale,
@@ -167,7 +175,7 @@
     if (event.button === 0) {
       const pos = getGridCellFromMouse(
         event,
-        svgContainer,
+        svgContainer as unknown as HTMLElement,
         $gridStore.translateX,
         $gridStore.translateY,
         $gridStore.scale,
@@ -201,7 +209,7 @@
     if ($dragState.isDragging && $dragState.componentId) {
       const pos = getGridCellFromMouse(
         event,
-        svgContainer,
+        svgContainer as unknown as HTMLElement,
         $gridStore.translateX,
         $gridStore.translateY,
         $gridStore.scale,
@@ -241,7 +249,7 @@
 
     const pos = getGridCellFromMouse(
       event,
-      svgContainer,
+      svgContainer as unknown as HTMLElement,
       $gridStore.translateX,
       $gridStore.translateY,
       $gridStore.scale,
@@ -280,13 +288,6 @@
 
     const { mouseX, mouseY, newScale } = pendingZoomData;
 
-    console.log('🔍 Zoom Update:', {
-      oldScale: $gridStore.scale,
-      newScale: newScale,
-      percentage: `${Math.round(newScale * 100)}%`,
-      mousePos: { x: Math.round(mouseX), y: Math.round(mouseY) },
-    });
-
     const { translateX, translateY } = calculateZoomToPoint(
       mouseX,
       mouseY,
@@ -296,11 +297,8 @@
       newScale,
     );
 
-    console.log('📝 Setting store:', { newScale, translateX, translateY });
     gridStore.setScale(newScale);
     gridStore.setTranslate(translateX, translateY);
-
-    console.log('✅ Store after update:', { scale: $gridStore.scale });
 
     rafId = null;
     pendingZoomData = null;
@@ -313,7 +311,6 @@
 
     const rect = svgContainer?.getBoundingClientRect();
     if (!rect) {
-      console.log('❌ No rect');
       return;
     }
     const mouseX = event.clientX - rect.left;
@@ -323,23 +320,12 @@
     const currentScale = $gridStore.scale;
     const newScale = Math.max(0.5, Math.min(5, currentScale + delta));
 
-    console.log('🖱️ Wheel Event:', {
-      deltaY: event.deltaY,
-      delta,
-      currentScale,
-      calculatedNewScale: newScale,
-      willUpdate: currentScale !== newScale,
-    });
-
     // Store zoom data (batches multiple events per frame)
     pendingZoomData = { mouseX, mouseY, newScale };
 
     // Schedule RAF if not already pending (one RAF per display frame)
     if (rafId === null) {
       rafId = requestAnimationFrame(processZoom);
-      console.log('✅ RAF scheduled');
-    } else {
-      console.log('⏭️ RAF already pending, updated data');
     }
   }
 
@@ -386,26 +372,34 @@
     if (!svgContainer) return;
 
     // Add wheel listener with { passive: false } to allow preventDefault()
-    svgContainer.addEventListener('wheel', handleWheel, { passive: false });
+    svgContainer?.addEventListener(
+      "wheel",
+      handleWheel as unknown as EventListener & WheelEvent,
+      { passive: false },
+    );
 
     return () => {
-      svgContainer.removeEventListener('wheel', handleWheel);
+      svgContainer?.removeEventListener(
+        "wheel",
+        handleWheel as unknown as EventListener,
+      );
     };
   });
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
+<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <div
-  class="w-full h-full fixed top-0 left-0 overflow-hidden"
-  bind:this={svgContainer}
+  tabindex="0"
   role="application"
   aria-label="Grid canvas container"
+  class="w-full h-full fixed top-0 left-0 overflow-hidden"
+  bind:this={svgContainer}
   onclick={closeContextMenu}
+  onkeydown={(e) => e.key === "Escape" && closeContextMenu()}
   style="cursor: {cursorStyle};background-color: #f5f5f7;"
-  tabindex="-1"
 >
-  <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
   <svg
     bind:this={svgElement}
     width={SVG_SIZE}
@@ -419,9 +413,14 @@
     oncontextmenu={handleContextMenu}
     role="application"
     aria-label="Interactive ceiling grid - 100 by 100 cells. Click to place components, drag to move, right-click to delete."
+    tabindex="0"
   >
     <title>Ceiling Grid Canvas</title>
-    <desc>Interactive grid for placing ceiling components like lights, air vents, and smoke detectors. Click to place components, drag to move them, right-click to delete.</desc>
+    <desc
+      >Interactive grid for placing ceiling components like lights, air vents,
+      and smoke detectors. Click to place components, drag to move them,
+      right-click to delete.</desc
+    >
     <defs>
       <pattern
         id="grid-pattern"
@@ -486,11 +485,17 @@
         {:else}
           <!-- Normal component -->
           <g
-            style="cursor: {$deleteMode ? 'pointer' : 'move'}; user-select: none;"
+            style="cursor: {$deleteMode
+              ? 'pointer'
+              : 'move'}; user-select: none;"
             transform="translate({component.gridX *
               CELL_SIZE}, {component.gridY * CELL_SIZE})"
           >
-            <title>{$deleteMode ? `Delete ${COMPONENT_INFO[component.type].label}` : COMPONENT_INFO[component.type].label}</title>
+            <title
+              >{$deleteMode
+                ? `Delete ${COMPONENT_INFO[component.type].label}`
+                : COMPONENT_INFO[component.type].label}</title
+            >
             <CeilingIconSVG
               type={component.type}
               size={CELL_SIZE}
@@ -537,8 +542,169 @@
         stroke-width="1"
         pointer-events="none"
       />
+
+      <!-- Cell coordinate label with background -->
+      <!-- <g pointer-events="none">
+        <rect
+          x={currentHighlight.gridX * CELL_SIZE + CELL_SIZE / 2 - 35}
+          y={currentHighlight.gridY * CELL_SIZE - 25}
+          width="70"
+          height="18"
+          fill="#7c3aed"
+          rx="2"
+        />
+        <text
+          x={currentHighlight.gridX * CELL_SIZE + CELL_SIZE / 2}
+          y={currentHighlight.gridY * CELL_SIZE - 12}
+          fill="white"
+          font-size="10"
+          font-weight="600"
+          text-anchor="middle"
+          font-family="system-ui, -apple-system, sans-serif"
+        >
+          X: {currentHighlight.gridX}, Y: {currentHighlight.gridY}
+        </text>
+      </g> -->
     {/if}
   </svg>
+
+  <!-- Smart guides for distance measurements -->
+  {#if currentHighlight.visible && $showGuides}
+    {@const screenX = $gridStore.translateX + (currentHighlight.gridX * CELL_SIZE + CELL_SIZE / 2) * $gridStore.scale}
+    {@const screenY = $gridStore.translateY + (currentHighlight.gridY * CELL_SIZE + CELL_SIZE / 2) * $gridStore.scale}
+    {@const cellX = currentHighlight.gridX}
+    {@const cellY = currentHighlight.gridY}
+    {@const distanceFromLeft = cellX * REAL_CELL_SIZE_M}
+    {@const distanceFromTop = cellY * REAL_CELL_SIZE_M}
+    {@const distanceFromRight = (GRID_SIZE - cellX - 1) * REAL_CELL_SIZE_M}
+    {@const distanceFromBottom = (GRID_SIZE - cellY - 1) * REAL_CELL_SIZE_M}
+
+    <!-- Smart guide - Distance from left (horizontal) -->
+    {#if cellX > 0}
+      {@const leftGuideX = $gridStore.translateX}
+      {@const leftGuideEndX = $gridStore.translateX + (cellX * CELL_SIZE) * $gridStore.scale}
+      {@const leftGuideY = screenY}
+      <svg class="fixed top-0 left-0 w-full h-full pointer-events-none z-40" style="overflow: visible;">
+        <!-- Horizontal line -->
+        <line
+          x1={leftGuideX}
+          y1={leftGuideY}
+          x2={leftGuideEndX}
+          y2={leftGuideY}
+          stroke="#ff4444"
+          stroke-width="2"
+          opacity="0.4"
+        />
+        <!-- Label -->
+        <text
+          x={(leftGuideX + leftGuideEndX) / 2}
+          y={leftGuideY - 10}
+          fill="#ff4444"
+          font-size="14"
+          font-weight="600"
+          text-anchor="middle"
+          font-family="system-ui, -apple-system, sans-serif"
+        >
+          {distanceFromLeft.toFixed(1)}m
+        </text>
+      </svg>
+    {/if}
+
+    <!-- Smart guide - Distance from top (vertical) -->
+    {#if cellY > 0}
+      {@const topGuideY = $gridStore.translateY}
+      {@const topGuideEndY = $gridStore.translateY + (cellY * CELL_SIZE) * $gridStore.scale}
+      {@const topGuideX = screenX}
+      <svg class="fixed top-0 left-0 w-full h-full pointer-events-none z-40" style="overflow: visible;">
+        <!-- Vertical line -->
+        <line
+          x1={topGuideX}
+          y1={topGuideY}
+          x2={topGuideX}
+          y2={topGuideEndY}
+          stroke="#ff4444"
+          stroke-width="2"
+          opacity="0.4"
+        />
+        <!-- Label -->
+        <text
+          x={topGuideX + 15}
+          y={(topGuideY + topGuideEndY) / 2}
+          fill="#ff4444"
+          font-size="14"
+          font-weight="600"
+          text-anchor="start"
+          font-family="system-ui, -apple-system, sans-serif"
+          dominant-baseline="middle"
+        >
+          {distanceFromTop.toFixed(1)}m
+        </text>
+      </svg>
+    {/if}
+
+    <!-- Smart guide - Distance from right (horizontal) -->
+    {#if cellX < GRID_SIZE - 1}
+      {@const rightGuideStartX = $gridStore.translateX + ((cellX + 1) * CELL_SIZE) * $gridStore.scale}
+      {@const rightGuideEndX = $gridStore.translateX + (GRID_SIZE * CELL_SIZE) * $gridStore.scale}
+      {@const rightGuideY = screenY}
+      <svg class="fixed top-0 left-0 w-full h-full pointer-events-none z-40" style="overflow: visible;">
+        <!-- Horizontal line -->
+        <line
+          x1={rightGuideStartX}
+          y1={rightGuideY}
+          x2={rightGuideEndX}
+          y2={rightGuideY}
+          stroke="#ff4444"
+          stroke-width="2"
+          opacity="0.4"
+        />
+        <!-- Label -->
+        <text
+          x={(rightGuideStartX + rightGuideEndX) / 2}
+          y={rightGuideY - 10}
+          fill="#ff4444"
+          font-size="14"
+          font-weight="600"
+          text-anchor="middle"
+          font-family="system-ui, -apple-system, sans-serif"
+        >
+          {distanceFromRight.toFixed(1)}m
+        </text>
+      </svg>
+    {/if}
+
+    <!-- Smart guide - Distance from bottom (vertical) -->
+    {#if cellY < GRID_SIZE - 1}
+      {@const bottomGuideStartY = $gridStore.translateY + ((cellY + 1) * CELL_SIZE) * $gridStore.scale}
+      {@const bottomGuideEndY = $gridStore.translateY + (GRID_SIZE * CELL_SIZE) * $gridStore.scale}
+      {@const bottomGuideX = screenX}
+      <svg class="fixed top-0 left-0 w-full h-full pointer-events-none z-40" style="overflow: visible;">
+        <!-- Vertical line -->
+        <line
+          x1={bottomGuideX}
+          y1={bottomGuideStartY}
+          x2={bottomGuideX}
+          y2={bottomGuideEndY}
+          stroke="#ff4444"
+          stroke-width="2"
+          opacity="0.4"
+        />
+        <!-- Label -->
+        <text
+          x={bottomGuideX + 15}
+          y={(bottomGuideStartY + bottomGuideEndY) / 2}
+          fill="#ff4444"
+          font-size="14"
+          font-weight="600"
+          text-anchor="start"
+          font-family="system-ui, -apple-system, sans-serif"
+          dominant-baseline="middle"
+        >
+          {distanceFromBottom.toFixed(1)}m
+        </text>
+      </svg>
+    {/if}
+  {/if}
 
   <!-- Context menu -->
   {#if contextMenuState.visible}
