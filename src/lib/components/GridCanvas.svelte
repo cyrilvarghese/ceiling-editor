@@ -22,6 +22,7 @@
   import { COMPONENT_INFO, generateComponentId } from "$lib/utils/components";
   import { Button } from "$lib/components/ui/button";
   import CeilingIconSVG from "$lib/components/icons/CeilingIconSVG.svelte";
+  import { X } from "lucide-svelte";
   import type { Component } from "$lib/types";
 
   let svgContainer = $state<HTMLDivElement>();
@@ -537,11 +538,26 @@
         y={currentHighlight.gridY * CELL_SIZE}
         width={CELL_SIZE}
         height={CELL_SIZE}
-        fill="rgba(255, 200, 0, 0.4)"
-        stroke="#000"
+        fill={$deleteMode ? "rgba(239, 68, 68, 0.4)" : "rgba(255, 200, 0, 0.4)"}
+        stroke={$deleteMode ? "#dc2626" : "#000"}
         stroke-width="1"
         pointer-events="none"
       />
+
+      <!-- X icon in delete mode -->
+      {#if $deleteMode}
+        <foreignObject
+          x={currentHighlight.gridX * CELL_SIZE}
+          y={currentHighlight.gridY * CELL_SIZE}
+          width={CELL_SIZE}
+          height={CELL_SIZE}
+          pointer-events="none"
+        >
+          <div class="flex items-center justify-center w-full h-full">
+            <X size={CELL_SIZE * 0.6} style="color: #dc2626;" strokeWidth={3} />
+          </div>
+        </foreignObject>
+      {/if}
 
       <!-- Cell coordinate label with background -->
       <!-- <g pointer-events="none">
@@ -569,7 +585,7 @@
   </svg>
 
   <!-- Smart guides for distance measurements -->
-  {#if currentHighlight.visible && $showGuides}
+  {#if currentHighlight.visible && $showGuides && !$deleteMode}
     {@const screenX = $gridStore.translateX + (currentHighlight.gridX * CELL_SIZE + CELL_SIZE / 2) * $gridStore.scale}
     {@const screenY = $gridStore.translateY + (currentHighlight.gridY * CELL_SIZE + CELL_SIZE / 2) * $gridStore.scale}
     {@const cellX = currentHighlight.gridX}

@@ -39,7 +39,7 @@
 <div
   role="toolbar"
   aria-label="Ceiling component palette"
-  class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-md rounded-full px-8 py-5 z-50 toolbar-shadow"
+  class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-md rounded-full px-12 py-6 z-50 toolbar-shadow"
 >
   <div class="flex items-center gap-6">
     {#each componentTypes as type (type)}
@@ -54,13 +54,17 @@
           data-type={type}
           class="w-14 h-14 flex items-center justify-center rounded-full transition-all component-button {$gridStore.selectedComponentType ===
           type
-            ? 'border-2 scale-110 selected'
+            ? 'scale-110 selected'
             : 'bg-white hover:scale-105'}"
-          style="{$gridStore.selectedComponentType === type
-            ? `background-color: ${COMPONENT_INFO[type].selectedBgColor}; border-color: ${COMPONENT_INFO[type].selectedBorderColor};`
-            : ''}"
+          style={$gridStore.selectedComponentType === type
+            ? `background-color: ${COMPONENT_INFO[type].selectedBgColor};`
+            : ""}
         >
-          <CeilingIcon {type} size={20} style="color: {COMPONENT_INFO[type].iconColor}" />
+          <CeilingIcon
+            {type}
+            size={20}
+            style="color: {COMPONENT_INFO[type].iconColor}"
+          />
         </div>
 
         <!-- Label -->
@@ -83,10 +87,13 @@
     >
       <div
         class="w-14 h-14 flex items-center justify-center rounded-full transition-all component-button {$deleteMode
-          ? 'border-2 scale-110 selected bg-red-100 border-red-200'
+          ? 'scale-110 selected bg-red-100'
           : 'bg-white hover:scale-105'}"
       >
-        <Trash2 size={20} style="color: {$deleteMode ? '#dc2626' : '#6b7280'}" />
+        <Trash2
+          size={20}
+          style="color: {$deleteMode ? '#dc2626' : '#6b7280'}"
+        />
       </div>
 
       <!-- Label -->
@@ -99,18 +106,21 @@
 
 <style>
   .toolbar-shadow {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.1),
+      0 2px 4px rgba(0, 0, 0, 0.06);
   }
 
   .component-button {
     box-shadow: none;
   }
 
-  .component-button:hover,
+  .component-button:hover {
+    box-shadow: none;
+  }
+
   .component-button.selected {
-    box-shadow:
-      0 2px 8px rgba(0, 0, 0, 0.08),
-      0 1px 4px rgba(0, 0, 0, 0.06);
+    box-shadow: none;
   }
 
   /* Hover colors per type */
