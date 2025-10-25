@@ -3,7 +3,6 @@
   import { COMPONENT_INFO } from "$lib/utils/components";
   import { Button } from "$lib/components/ui/button";
   import CeilingIcon from "$lib/components/icons/CeilingIcon.svelte";
-  import { Trash2 } from "lucide-svelte";
   import type { ComponentType } from "$lib/types";
 
   const componentTypes: ComponentType[] = [
@@ -80,19 +79,21 @@
     <!-- Delete Mode Toggle -->
     <Button
       variant="ghost"
-      class="relative group flex flex-col items-center gap-1.5 p-0 h-auto hover:bg-transparent focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+      class="relative group flex flex-col items-center gap-1.5 p-0  h-auto hover:bg-transparent focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
       onclick={toggleDeleteMode}
       aria-label="Delete mode"
       aria-pressed={$deleteMode}
     >
       <div
+        data-type="delete"
         class="w-14 h-14 flex items-center justify-center rounded-full transition-all component-button {$deleteMode
           ? 'scale-110 selected bg-red-100'
           : 'bg-white hover:scale-105'}"
       >
-        <Trash2
+        <CeilingIcon
+          type="delete"
           size={20}
-          style="color: {$deleteMode ? '#dc2626' : '#6b7280'}"
+          style="color: #ef4444"
         />
       </div>
 
@@ -128,15 +129,18 @@
     background-color: #fef3c7 !important; /* yellow-100 */
   }
   [data-type="supply"].component-button:hover:not(.selected) {
-    background-color: #dbeafe !important; /* blue-100 */
+    background-color: #dcfce7 !important; /* green-100 */
   }
   [data-type="return"].component-button:hover:not(.selected) {
-    background-color: #e9d5ff !important; /* purple-100 */
+    background-color: #dbeafe !important; /* blue-100 */
   }
   [data-type="smoke"].component-button:hover:not(.selected) {
-    background-color: #fee2e2 !important; /* red-100 */
+    background-color: #e9d5ff !important; /* purple-100 */
   }
   [data-type="invalid"].component-button:hover:not(.selected) {
     background-color: #f3f4f6 !important; /* gray-100 */
+  }
+  [data-type="delete"].component-button:hover:not(.selected) {
+    background-color: #fee2e2 !important; /* red-100 */
   }
 </style>

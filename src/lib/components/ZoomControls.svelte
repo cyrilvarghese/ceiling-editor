@@ -19,7 +19,7 @@
   }
 
   function toggleGuides() {
-    showGuides.update(val => !val);
+    showGuides.update((val) => !val);
   }
 
   let zoomPercentage = $derived(Math.round($gridStore.scale * 100));
@@ -44,7 +44,10 @@
 
     <!-- Zoom Percentage Display -->
     <div class="flex flex-col items-center justify-center py-2">
-      <span class="text-lg font-bold text-gray-700 text-center" aria-live="polite">
+      <span
+        class="text-lg font-bold text-gray-700 text-center"
+        aria-live="polite"
+      >
         {zoomPercentage}%
       </span>
     </div>
@@ -83,13 +86,11 @@
       aria-label="Toggle smart guides"
       class="w-10 h-10 p-0 flex items-center justify-center rounded-full transition-colors data-[state=on]:bg-blue-100 data-[state=on]:text-blue-600 bg-gray-100 hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
     >
-      <Ruler size={18} />
+      <div
+        class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center"
+      >
+        <Ruler size={18} />
+      </div>
     </Toggle>
   </div>
 </div>
-
-<style>
-  .toolbar-shadow {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
-  }
-</style>

@@ -4,7 +4,7 @@
     Wind,
     RotateCcw,
     AlarmSmoke,
-    CircleX,
+    CircleSlash2,
   } from "lucide-svelte";
   import { COMPONENT_INFO } from "$lib/utils/components";
   import type { ComponentType } from "$lib/types";
@@ -47,7 +47,7 @@
       {:else if type === "smoke"}
         <AlarmSmoke {size} class={className} style="color: {COMPONENT_INFO[type].iconColor}; {style}" />
       {:else if type === "invalid"}
-        <CircleX {size} class={className} style="color: {COMPONENT_INFO[type].iconColor}; {style}" />
+        <CircleSlash2 {size} class={className} style="color: {COMPONENT_INFO[type].iconColor}; {style}" />
       {/if}
     </div>
   </foreignObject>

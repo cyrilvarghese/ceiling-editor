@@ -4,9 +4,12 @@
     Wind,
     RotateCcw,
     AlarmSmoke,
-    CircleX,
+    CircleSlash2,
+    Trash2,
   } from "lucide-svelte";
   import type { ComponentType } from "$lib/types";
+
+  type IconType = ComponentType | "delete";
 
   let {
     type,
@@ -14,21 +17,25 @@
     class: className = "text-gray-700",
     style = "",
   }: {
-    type: ComponentType;
+    type: IconType;
     size?: number;
     class?: string;
     style?: string;
   } = $props();
 </script>
 
-{#if type === "light"}
-  <Lightbulb {size} class={className} {style} />
-{:else if type === "supply"}
-  <Wind {size} class={className} {style} />
-{:else if type === "return"}
-  <RotateCcw {size} class={className} {style} />
-{:else if type === "smoke"}
-  <AlarmSmoke {size} class={className} {style} />
-{:else if type === "invalid"}
-  <CircleX {size} class={className} {style} />
-{/if}
+<div class={className} style="width: {size}px; height: {size}px; {style}">
+  {#if type === "light"}
+    <Lightbulb size={size} />
+  {:else if type === "supply"}
+    <Wind size={size} />
+  {:else if type === "return"}
+    <RotateCcw size={size} />
+  {:else if type === "smoke"}
+    <AlarmSmoke size={size} />
+  {:else if type === "invalid"}
+    <CircleSlash2 size={size} />
+  {:else if type === "delete"}
+    <Trash2 size={size} />
+  {/if}
+</div>

@@ -55,7 +55,7 @@ function createGridStore() {
         return { ...state, components: newComponents };
       }),
     resetView: () => {
-      const resetScale = 1.0;
+      const resetScale = 1.9;
       const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1920;
       const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 1080;
       const scaledGridSize = SVG_SIZE * resetScale;

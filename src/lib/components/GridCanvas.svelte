@@ -398,7 +398,6 @@
   class="w-full h-full fixed top-0 left-0 overflow-hidden"
   bind:this={svgContainer}
   onclick={closeContextMenu}
-  onkeydown={(e) => e.key === "Escape" && closeContextMenu()}
   style="cursor: {cursorStyle};background-color: #f5f5f7;"
 >
   <svg
@@ -457,12 +456,13 @@
           transform="translate({component.gridX * CELL_SIZE}, {component.gridY *
             CELL_SIZE})"
         >
-          <rect
-            width={CELL_SIZE}
-            height={CELL_SIZE}
-            fill="#999999"
-            stroke="#666666"
-            stroke-width="0.5"
+          <title>{COMPONENT_INFO[component.type].label}</title>
+          <CeilingIconSVG
+            type={component.type}
+            size={CELL_SIZE}
+            x={0}
+            y={0}
+            class="text-gray-700"
           />
         </g>
       {:else}
@@ -586,8 +586,12 @@
 
   <!-- Smart guides for distance measurements -->
   {#if currentHighlight.visible && $showGuides && !$deleteMode}
-    {@const screenX = $gridStore.translateX + (currentHighlight.gridX * CELL_SIZE + CELL_SIZE / 2) * $gridStore.scale}
-    {@const screenY = $gridStore.translateY + (currentHighlight.gridY * CELL_SIZE + CELL_SIZE / 2) * $gridStore.scale}
+    {@const screenX =
+      $gridStore.translateX +
+      (currentHighlight.gridX * CELL_SIZE + CELL_SIZE / 2) * $gridStore.scale}
+    {@const screenY =
+      $gridStore.translateY +
+      (currentHighlight.gridY * CELL_SIZE + CELL_SIZE / 2) * $gridStore.scale}
     {@const cellX = currentHighlight.gridX}
     {@const cellY = currentHighlight.gridY}
     {@const distanceFromLeft = cellX * REAL_CELL_SIZE_M}
@@ -598,9 +602,13 @@
     <!-- Smart guide - Distance from left (horizontal) -->
     {#if cellX > 0}
       {@const leftGuideX = $gridStore.translateX}
-      {@const leftGuideEndX = $gridStore.translateX + (cellX * CELL_SIZE) * $gridStore.scale}
+      {@const leftGuideEndX =
+        $gridStore.translateX + cellX * CELL_SIZE * $gridStore.scale}
       {@const leftGuideY = screenY}
-      <svg class="fixed top-0 left-0 w-full h-full pointer-events-none z-40" style="overflow: visible;">
+      <svg
+        class="fixed top-0 left-0 w-full h-full pointer-events-none z-40"
+        style="overflow: visible;"
+      >
         <!-- Horizontal line -->
         <line
           x1={leftGuideX}
@@ -629,9 +637,13 @@
     <!-- Smart guide - Distance from top (vertical) -->
     {#if cellY > 0}
       {@const topGuideY = $gridStore.translateY}
-      {@const topGuideEndY = $gridStore.translateY + (cellY * CELL_SIZE) * $gridStore.scale}
+      {@const topGuideEndY =
+        $gridStore.translateY + cellY * CELL_SIZE * $gridStore.scale}
       {@const topGuideX = screenX}
-      <svg class="fixed top-0 left-0 w-full h-full pointer-events-none z-40" style="overflow: visible;">
+      <svg
+        class="fixed top-0 left-0 w-full h-full pointer-events-none z-40"
+        style="overflow: visible;"
+      >
         <!-- Vertical line -->
         <line
           x1={topGuideX}
@@ -660,10 +672,15 @@
 
     <!-- Smart guide - Distance from right (horizontal) -->
     {#if cellX < GRID_SIZE - 1}
-      {@const rightGuideStartX = $gridStore.translateX + ((cellX + 1) * CELL_SIZE) * $gridStore.scale}
-      {@const rightGuideEndX = $gridStore.translateX + (GRID_SIZE * CELL_SIZE) * $gridStore.scale}
+      {@const rightGuideStartX =
+        $gridStore.translateX + (cellX + 1) * CELL_SIZE * $gridStore.scale}
+      {@const rightGuideEndX =
+        $gridStore.translateX + GRID_SIZE * CELL_SIZE * $gridStore.scale}
       {@const rightGuideY = screenY}
-      <svg class="fixed top-0 left-0 w-full h-full pointer-events-none z-40" style="overflow: visible;">
+      <svg
+        class="fixed top-0 left-0 w-full h-full pointer-events-none z-40"
+        style="overflow: visible;"
+      >
         <!-- Horizontal line -->
         <line
           x1={rightGuideStartX}
@@ -691,10 +708,15 @@
 
     <!-- Smart guide - Distance from bottom (vertical) -->
     {#if cellY < GRID_SIZE - 1}
-      {@const bottomGuideStartY = $gridStore.translateY + ((cellY + 1) * CELL_SIZE) * $gridStore.scale}
-      {@const bottomGuideEndY = $gridStore.translateY + (GRID_SIZE * CELL_SIZE) * $gridStore.scale}
+      {@const bottomGuideStartY =
+        $gridStore.translateY + (cellY + 1) * CELL_SIZE * $gridStore.scale}
+      {@const bottomGuideEndY =
+        $gridStore.translateY + GRID_SIZE * CELL_SIZE * $gridStore.scale}
       {@const bottomGuideX = screenX}
-      <svg class="fixed top-0 left-0 w-full h-full pointer-events-none z-40" style="overflow: visible;">
+      <svg
+        class="fixed top-0 left-0 w-full h-full pointer-events-none z-40"
+        style="overflow: visible;"
+      >
         <!-- Vertical line -->
         <line
           x1={bottomGuideX}

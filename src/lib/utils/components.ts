@@ -1,6 +1,6 @@
 import type { ComponentType } from '../types';
 import type { Component as LucideComponent } from 'lucide-svelte';
-import { Lightbulb, Wind, RotateCcw, AlarmSmoke, CircleX } from 'lucide-svelte';
+import { Lightbulb, Wind, RotateCcw, AlarmSmoke, CircleSlash2 } from 'lucide-svelte';
 
 export interface ComponentInfo {
   icon: typeof LucideComponent;
@@ -26,31 +26,31 @@ export const COMPONENT_INFO: Record<ComponentType, ComponentInfo> = {
     icon: Wind,
     label: 'Air Supply',
     description: 'Air supply vent',
-    bgColor: '#dbeafe', // blue-100
-    iconColor: '#2563eb', // blue-600
-    selectedBgColor: '#dbeafe', // blue-100
-    selectedBorderColor: '#bfdbfe', // blue-200
+    bgColor: '#dcfce7', // green-100
+    iconColor: '#16a34a', // green-600
+    selectedBgColor: '#dcfce7', // green-100
+    selectedBorderColor: '#bbf7d0', // green-200
   },
   return: {
     icon: RotateCcw,
     label: 'Air Return',
     description: 'Air return vent',
-    bgColor: '#e9d5ff', // purple-100
-    iconColor: '#9333ea', // purple-600
-    selectedBgColor: '#e9d5ff', // purple-100
-    selectedBorderColor: '#d8b4fe', // purple-200
+    bgColor: '#dbeafe', // blue-100
+    iconColor: '#2563eb', // blue-600
+    selectedBgColor: '#dbeafe', // blue-100
+    selectedBorderColor: '#bfdbfe', // blue-200
   },
   smoke: {
     icon: AlarmSmoke,
     label: 'Smoke Detector',
     description: 'Smoke detector',
-    bgColor: '#fee2e2', // red-100
-    iconColor: '#dc2626', // red-600
-    selectedBgColor: '#fee2e2', // red-100
-    selectedBorderColor: '#fecaca', // red-200
+    bgColor: '#e9d5ff', // purple-100
+    iconColor: '#9333ea', // purple-600
+    selectedBgColor: '#e9d5ff', // purple-100
+    selectedBorderColor: '#d8b4fe', // purple-200
   },
   invalid: {
-    icon: CircleX,
+    icon: CircleSlash2,
     label: 'Invalid',
     description: 'Invalid grid marker',
     bgColor: '#f3f4f6', // gray-100

@@ -67,3 +67,9 @@
   width: 100%;
   height: 100vh;
 }
+
+/* Force Lucide icons to use explicit width/height classes */
+svg[class*="lucide"] {
+  width: inherit !important;
+  height: inherit !important;
+}
