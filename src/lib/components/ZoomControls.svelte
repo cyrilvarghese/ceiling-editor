@@ -2,7 +2,7 @@
   import { gridStore, showGuides } from "$lib/stores/gridStore";
   import { Button } from "$lib/components/ui/button";
   import { Toggle } from "$lib/components/ui/toggle";
-  import { Ruler } from "lucide-svelte";
+  import { Ruler, Plus, Minus, RotateCcw } from "lucide-svelte";
 
   function zoomIn() {
     const newScale = Math.min(5, $gridStore.scale + 0.1);
@@ -39,13 +39,17 @@
       disabled={$gridStore.scale >= 5}
       aria-label="Zoom in"
     >
-      <span class="text-xl font-bold" aria-hidden="true">+</span>
+      <div
+        class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center"
+      >
+        <Plus size={20} class="w-5 h-5" />
+      </div>
     </Button>
 
     <!-- Zoom Percentage Display -->
     <div class="flex flex-col items-center justify-center py-2">
       <span
-        class="text-lg font-bold text-gray-700 text-center"
+        class="text-sm font-bold text-gray-700 text-center"
         aria-live="polite"
       >
         {zoomPercentage}%
@@ -60,7 +64,11 @@
       disabled={$gridStore.scale <= 0.5}
       aria-label="Zoom out"
     >
-      <span class="text-xl font-bold" aria-hidden="true">−</span>
+      <div
+        class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center"
+      >
+        <Minus size={20} class="w-5 h-5" />
+      </div>
     </Button>
 
     <!-- Divider -->
@@ -73,7 +81,11 @@
       onclick={resetZoom}
       aria-label="Reset view"
     >
-      <span aria-hidden="true">⟲</span>
+      <div
+        class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center"
+      >
+        <RotateCcw size={20} class="w-5 h-5" />
+      </div>
     </Button>
 
     <!-- Divider -->
@@ -89,7 +101,7 @@
       <div
         class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center"
       >
-        <Ruler size={18} />
+        <Ruler size={20} class="w-5 h-5" />
       </div>
     </Toggle>
   </div>
