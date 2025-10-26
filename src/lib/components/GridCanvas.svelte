@@ -549,8 +549,6 @@
         width={CELL_SIZE}
         height={CELL_SIZE}
         fill={bgColor}
-        stroke={strokeColor}
-        stroke-width="1"
         pointer-events="none"
       />
 
@@ -568,13 +566,15 @@
           </div>
         </foreignObject>
       {:else if selectedType}
-        <CeilingIconSVG
-          type={selectedType}
-          size={CELL_SIZE}
-          x={currentHighlight.gridX * CELL_SIZE}
-          y={currentHighlight.gridY * CELL_SIZE}
-          class="text-gray-700"
-        />
+        <g opacity="0.4">
+          <CeilingIconSVG
+            type={selectedType}
+            size={CELL_SIZE}
+            x={currentHighlight.gridX * CELL_SIZE}
+            y={currentHighlight.gridY * CELL_SIZE}
+            class="text-gray-700"
+          />
+        </g>
       {/if}
 
       <!-- Cell coordinate label with background -->
@@ -633,7 +633,7 @@
           y1={leftGuideY}
           x2={leftGuideEndX}
           y2={leftGuideY}
-          stroke="#ff4444"
+          stroke="#fb923c"
           stroke-width="2"
           opacity="0.4"
         />
@@ -641,7 +641,7 @@
         <text
           x={leftGuideEndX - 24}
           y={leftGuideY}
-          fill="#ff4444"
+          fill="#fb923c"
           font-size="14"
           font-weight="600"
           text-anchor="end"
@@ -672,7 +672,7 @@
           y1={topGuideY}
           x2={topGuideX}
           y2={topGuideEndY}
-          stroke="#ff4444"
+          stroke="#fb923c"
           stroke-width="2"
           opacity="0.4"
         />
@@ -680,7 +680,7 @@
         <text
           x={topGuideX}
           y={topGuideEndY - 24}
-          fill="#ff4444"
+          fill="#fb923c"
           font-size="14"
           font-weight="600"
           text-anchor="middle"
@@ -711,7 +711,7 @@
           y1={rightGuideY}
           x2={rightGuideEndX}
           y2={rightGuideY}
-          stroke="#ff4444"
+          stroke="#fb923c"
           stroke-width="2"
           opacity="0.4"
         />
@@ -719,7 +719,7 @@
         <text
           x={rightGuideStartX + 24}
           y={rightGuideY}
-          fill="#ff4444"
+          fill="#fb923c"
           font-size="14"
           font-weight="600"
           text-anchor="start"
@@ -751,7 +751,7 @@
           y1={bottomGuideStartY}
           x2={bottomGuideX}
           y2={bottomGuideEndY}
-          stroke="#ff4444"
+          stroke="#fb923c"
           stroke-width="2"
           opacity="0.4"
         />
@@ -759,7 +759,7 @@
         <text
           x={bottomGuideX}
           y={bottomGuideStartY + 34}
-          fill="#ff4444"
+          fill="#fb923c"
           font-size="14"
           font-weight="600"
           text-anchor="middle"
