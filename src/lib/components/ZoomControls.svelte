@@ -92,12 +92,10 @@
       onPressedChange={toggleGuides}
       aria-label="Toggle smart guides"
       title="Toggle smart guides"
-      class="w-10 h-10 p-0 flex items-center justify-center rounded-full transition-colors data-[state=on]:bg-orange-100 data-[state=on]:text-orange-600 bg-gray-100 hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+      class="w-10 h-10 p-0 flex items-center justify-center rounded-full transition-colors data-[state=on]:bg-orange-100 data-[state=on]:text-orange-600 bg-gray-100 hover:bg-orange-200 focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
     >
-      <div
-        class="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center"
-      >
-        <Ruler size={20} class="w-5 h-5" />
+      <div class="w-5 h-5 rounded-full flex items-center justify-center">
+        <Ruler size={20} class="w-5 h-5 text-orange-600" />
       </div>
     </Toggle>
   </div>
