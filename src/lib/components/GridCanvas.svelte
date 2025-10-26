@@ -519,11 +519,13 @@
     <!-- Hover highlight (rendered last to appear on top) -->
     {#if currentHighlight.visible}
       {@const selectedType = $gridStore.selectedComponentType}
-      {@const bgColor = $deleteMode
-        ? "rgba(239, 68, 68, 0.4)"
-        : selectedType
-          ? `${COMPONENT_INFO[selectedType].bgColor}99`
-          : "rgba(255, 200, 0, 0.4)"}
+      {@const bgColor = $dragState.isDragging
+        ? "transparent"
+        : $deleteMode
+          ? "rgba(239, 68, 68, 0.4)"
+          : selectedType
+            ? `${COMPONENT_INFO[selectedType].bgColor}99`
+            : "rgba(255, 200, 0, 0.4)"}
       {@const strokeColor = $deleteMode
         ? "#dc2626"
         : selectedType
@@ -537,6 +539,8 @@
         width={CELL_SIZE}
         height={CELL_SIZE}
         fill={bgColor}
+        stroke={$dragState.isDragging ? "black" : "none"}
+        stroke-width={$dragState.isDragging ? "2" : "0"}
         pointer-events="none"
       />
 
@@ -553,7 +557,7 @@
             <X size={CELL_SIZE * 0.6} style="color: #dc2626; opacity: 0.5;" strokeWidth={3} />
           </div>
         </foreignObject>
-      {:else if selectedType}
+      {:else if selectedType && !$dragState.isDragging}
         <g opacity="0.4">
           <CeilingIconSVG
             type={selectedType}

@@ -2,7 +2,7 @@ import { writable, derived } from 'svelte/store';
 import type { Component, ComponentType, DragState, PanState, GridState } from '../types';
 
 // Constants
-export const GRID_SIZE = 100;
+export const GRID_SIZE = 1000;
 export const CELL_SIZE = 10;
 export const SVG_SIZE = GRID_SIZE * CELL_SIZE;
 export const REAL_CELL_SIZE_M = 0.6; // Each grid cell is 0.6m x 0.6m in real world
