@@ -22,7 +22,13 @@
   import { COMPONENT_INFO, generateComponentId } from "$lib/utils/components";
   import { Button } from "$lib/components/ui/button";
   import CeilingIconSVG from "$lib/components/icons/CeilingIconSVG.svelte";
+  import SmartGuide from "$lib/components/SmartGuide.svelte";
   import type { Component } from "$lib/types";
+
+  // Icon rendering constants
+  const ICON_BASE_SIZE = 24; // Lucide icons are 24x24
+  const ICON_SCALE_FACTOR = 0.6; // Icon takes 60% of cell size
+  const ICON_CENTER_OFFSET = -12; // Half of base size for centering
 
   let svgContainer = $state<HTMLDivElement>();
   let svgElement = $state<SVGSVGElement>();
@@ -53,6 +59,13 @@
           ? "crosshair"
           : "default",
   );
+
+  // Derived values for delete mode icon transform (improves readability)
+  let deleteIconTransform = $derived({
+    x: currentHighlight.gridX * CELL_SIZE + CELL_SIZE / 2,
+    y: currentHighlight.gridY * CELL_SIZE + CELL_SIZE / 2,
+    scale: (CELL_SIZE * ICON_SCALE_FACTOR) / ICON_BASE_SIZE,
+  });
 
   // Handle mousemove with requestAnimationFrame throttling
   function handleMouseMove(event: MouseEvent) {
@@ -562,7 +575,7 @@
       {#if $deleteMode}
         <!-- Native SVG X icon -->
         <g
-          transform="translate({currentHighlight.gridX * CELL_SIZE + CELL_SIZE / 2}, {currentHighlight.gridY * CELL_SIZE + CELL_SIZE / 2}) scale({(CELL_SIZE * 0.6) / 24})"
+          transform="translate({deleteIconTransform.x}, {deleteIconTransform.y}) scale({deleteIconTransform.scale})"
           opacity="0.5"
           pointer-events="none"
         >
@@ -573,7 +586,7 @@
             stroke-width="3"
             stroke-linecap="round"
             stroke-linejoin="round"
-            transform="translate(-12, -12)"
+            transform="translate({ICON_CENTER_OFFSET}, {ICON_CENTER_OFFSET})"
           />
         </g>
       {:else if selectedType && !$dragState.isDragging}
@@ -587,29 +600,6 @@
           />
         </g>
       {/if}
-
-      <!-- Cell coordinate label with background -->
-      <!-- <g pointer-events="none">
-        <rect
-          x={currentHighlight.gridX * CELL_SIZE + CELL_SIZE / 2 - 35}
-          y={currentHighlight.gridY * CELL_SIZE - 25}
-          width="70"
-          height="18"
-          fill="#7c3aed"
-          rx="2"
-        />
-        <text
-          x={currentHighlight.gridX * CELL_SIZE + CELL_SIZE / 2}
-          y={currentHighlight.gridY * CELL_SIZE - 12}
-          fill="white"
-          font-size="10"
-          font-weight="600"
-          text-anchor="middle"
-          font-family="system-ui, -apple-system, sans-serif"
-        >
-          X: {currentHighlight.gridX}, Y: {currentHighlight.gridY}
-        </text>
-      </g> -->
     {/if}
   </svg>
 
@@ -634,37 +624,15 @@
       {@const leftGuideEndX =
         $gridStore.translateX + cellX * CELL_SIZE * $gridStore.scale}
       {@const leftGuideY = screenY}
-      <svg
-        class="fixed top-0 left-0 w-full h-full pointer-events-none z-40"
-        style="overflow: visible;"
-      >
-        <!-- Horizontal line -->
-        <line
-          x1={leftGuideX}
-          y1={leftGuideY}
-          x2={leftGuideEndX}
-          y2={leftGuideY}
-          stroke="#fb923c"
-          stroke-width="2"
-          opacity="0.4"
-        />
-        <!-- Label -->
-        <text
-          x={leftGuideEndX - 24}
-          y={leftGuideY}
-          fill="#fb923c"
-          font-size="14"
-          font-weight="600"
-          text-anchor="end"
-          font-family="system-ui, -apple-system, sans-serif"
-          dominant-baseline="middle"
-          stroke="white"
-          stroke-width="4"
-          paint-order="stroke"
-        >
-          {distanceFromLeft.toFixed(1)}m
-        </text>
-      </svg>
+      <SmartGuide
+        orientation="horizontal"
+        startX={leftGuideX}
+        startY={leftGuideY}
+        endX={leftGuideEndX}
+        endY={leftGuideY}
+        distance={distanceFromLeft}
+        labelOffsetX={-24}
+      />
     {/if}
 
     <!-- Smart guide - Distance from top (vertical) -->
@@ -673,36 +641,15 @@
       {@const topGuideEndY =
         $gridStore.translateY + cellY * CELL_SIZE * $gridStore.scale}
       {@const topGuideX = screenX}
-      <svg
-        class="fixed top-0 left-0 w-full h-full pointer-events-none z-40"
-        style="overflow: visible;"
-      >
-        <!-- Vertical line -->
-        <line
-          x1={topGuideX}
-          y1={topGuideY}
-          x2={topGuideX}
-          y2={topGuideEndY}
-          stroke="#fb923c"
-          stroke-width="2"
-          opacity="0.4"
-        />
-        <!-- Label -->
-        <text
-          x={topGuideX}
-          y={topGuideEndY - 24}
-          fill="#fb923c"
-          font-size="14"
-          font-weight="600"
-          text-anchor="middle"
-          font-family="system-ui, -apple-system, sans-serif"
-          stroke="white"
-          stroke-width="4"
-          paint-order="stroke"
-        >
-          {distanceFromTop.toFixed(1)}m
-        </text>
-      </svg>
+      <SmartGuide
+        orientation="vertical"
+        startX={topGuideX}
+        startY={topGuideY}
+        endX={topGuideX}
+        endY={topGuideEndY}
+        distance={distanceFromTop}
+        labelOffsetY={-24}
+      />
     {/if}
 
     <!-- Smart guide - Distance from right (horizontal) -->
@@ -712,37 +659,15 @@
       {@const rightGuideEndX =
         $gridStore.translateX + GRID_SIZE * CELL_SIZE * $gridStore.scale}
       {@const rightGuideY = screenY}
-      <svg
-        class="fixed top-0 left-0 w-full h-full pointer-events-none z-40"
-        style="overflow: visible;"
-      >
-        <!-- Horizontal line -->
-        <line
-          x1={rightGuideStartX}
-          y1={rightGuideY}
-          x2={rightGuideEndX}
-          y2={rightGuideY}
-          stroke="#fb923c"
-          stroke-width="2"
-          opacity="0.4"
-        />
-        <!-- Label -->
-        <text
-          x={rightGuideStartX + 24}
-          y={rightGuideY}
-          fill="#fb923c"
-          font-size="14"
-          font-weight="600"
-          text-anchor="start"
-          font-family="system-ui, -apple-system, sans-serif"
-          dominant-baseline="middle"
-          stroke="white"
-          stroke-width="4"
-          paint-order="stroke"
-        >
-          {distanceFromRight.toFixed(1)}m
-        </text>
-      </svg>
+      <SmartGuide
+        orientation="horizontal"
+        startX={rightGuideStartX}
+        startY={rightGuideY}
+        endX={rightGuideEndX}
+        endY={rightGuideY}
+        distance={distanceFromRight}
+        labelOffsetX={24}
+      />
     {/if}
 
     <!-- Smart guide - Distance from bottom (vertical) -->
@@ -752,36 +677,15 @@
       {@const bottomGuideEndY =
         $gridStore.translateY + GRID_SIZE * CELL_SIZE * $gridStore.scale}
       {@const bottomGuideX = screenX}
-      <svg
-        class="fixed top-0 left-0 w-full h-full pointer-events-none z-40"
-        style="overflow: visible;"
-      >
-        <!-- Vertical line -->
-        <line
-          x1={bottomGuideX}
-          y1={bottomGuideStartY}
-          x2={bottomGuideX}
-          y2={bottomGuideEndY}
-          stroke="#fb923c"
-          stroke-width="2"
-          opacity="0.4"
-        />
-        <!-- Label -->
-        <text
-          x={bottomGuideX}
-          y={bottomGuideStartY + 34}
-          fill="#fb923c"
-          font-size="14"
-          font-weight="600"
-          text-anchor="middle"
-          font-family="system-ui, -apple-system, sans-serif"
-          stroke="white"
-          stroke-width="4"
-          paint-order="stroke"
-        >
-          {distanceFromBottom.toFixed(1)}m
-        </text>
-      </svg>
+      <SmartGuide
+        orientation="vertical"
+        startX={bottomGuideX}
+        startY={bottomGuideStartY}
+        endX={bottomGuideX}
+        endY={bottomGuideEndY}
+        distance={distanceFromBottom}
+        labelOffsetY={34}
+      />
     {/if}
   {/if}
 

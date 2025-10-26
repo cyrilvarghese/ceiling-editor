@@ -106,23 +106,7 @@
 </div>
 
 <style>
-  .toolbar-shadow {
-    box-shadow:
-      0 4px 12px rgba(0, 0, 0, 0.1),
-      0 2px 4px rgba(0, 0, 0, 0.06);
-  }
-
-  .component-button {
-    box-shadow: none;
-  }
-
-  .component-button:hover {
-    box-shadow: none;
-  }
-
-  .component-button.selected {
-    box-shadow: none;
-  }
+  @import '$lib/styles/shared.css';
 
   /* Hover colors per type */
   [data-type="light"].component-button:hover:not(.selected) {

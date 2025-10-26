@@ -61,27 +61,6 @@ export const COMPONENT_INFO: Record<ComponentType, ComponentInfo> = {
 };
 
 /**
- * Gets the Lucide icon component for a component type
- */
-export function getComponentIcon(type: ComponentType) {
-  return COMPONENT_INFO[type].icon;
-}
-
-/**
- * Gets the label for a component type
- */
-export function getComponentLabel(type: ComponentType): string {
-  return COMPONENT_INFO[type].label;
-}
-
-/**
- * Gets the description for a component type
- */
-export function getComponentDescription(type: ComponentType): string {
-  return COMPONENT_INFO[type].description;
-}
-
-/**
  * Generates a unique ID for a component
  */
 export function generateComponentId(): string {
