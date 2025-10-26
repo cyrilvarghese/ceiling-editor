@@ -415,12 +415,6 @@
     aria-label="Interactive ceiling grid - 100 by 100 cells. Click to place components, drag to move, right-click to delete."
     tabindex="0"
   >
-    <title>Ceiling Grid Canvas</title>
-    <desc
-      >Interactive grid for placing ceiling components like lights, air vents,
-      and smoke detectors. Click to place components, drag to move them,
-      right-click to delete.</desc
-    >
     <defs>
       <pattern
         id="grid-pattern"
@@ -474,7 +468,11 @@
             transform="translate({component.gridX *
               CELL_SIZE}, {component.gridY * CELL_SIZE})"
           >
-            <title>{COMPONENT_INFO[component.type].label}</title>
+            <title
+              >{$deleteMode
+                ? `Click to Delete ${COMPONENT_INFO[component.type].label}`
+                : COMPONENT_INFO[component.type].label}</title
+            >
             <CeilingIconSVG
               type={component.type}
               size={CELL_SIZE}
@@ -494,7 +492,7 @@
           >
             <title
               >{$deleteMode
-                ? `Delete ${COMPONENT_INFO[component.type].label}`
+                ? `Click to Delete ${COMPONENT_INFO[component.type].label}`
                 : COMPONENT_INFO[component.type].label}</title
             >
             <CeilingIconSVG
@@ -532,19 +530,31 @@
 
     <!-- Hover highlight (rendered last to appear on top) -->
     {#if currentHighlight.visible}
+      {@const selectedType = $gridStore.selectedComponentType}
+      {@const bgColor = $deleteMode
+        ? "rgba(239, 68, 68, 0.4)"
+        : selectedType
+          ? `${COMPONENT_INFO[selectedType].bgColor}99`
+          : "rgba(255, 200, 0, 0.4)"}
+      {@const strokeColor = $deleteMode
+        ? "#dc2626"
+        : selectedType
+          ? COMPONENT_INFO[selectedType].iconColor
+          : "#000"}
+
       <rect
         bind:this={highlightRect}
         x={currentHighlight.gridX * CELL_SIZE}
         y={currentHighlight.gridY * CELL_SIZE}
         width={CELL_SIZE}
         height={CELL_SIZE}
-        fill={$deleteMode ? "rgba(239, 68, 68, 0.4)" : "rgba(255, 200, 0, 0.4)"}
-        stroke={$deleteMode ? "#dc2626" : "#000"}
+        fill={bgColor}
+        stroke={strokeColor}
         stroke-width="1"
         pointer-events="none"
       />
 
-      <!-- X icon in delete mode -->
+      <!-- Icon in highlight -->
       {#if $deleteMode}
         <foreignObject
           x={currentHighlight.gridX * CELL_SIZE}
@@ -554,9 +564,17 @@
           pointer-events="none"
         >
           <div class="flex items-center justify-center w-full h-full">
-            <X size={CELL_SIZE * 0.6} style="color: #dc2626;" strokeWidth={3} />
+            <X size={CELL_SIZE * 0.6} style="color: #dc2626; opacity: 0.5;" strokeWidth={3} />
           </div>
         </foreignObject>
+      {:else if selectedType}
+        <CeilingIconSVG
+          type={selectedType}
+          size={CELL_SIZE}
+          x={currentHighlight.gridX * CELL_SIZE}
+          y={currentHighlight.gridY * CELL_SIZE}
+          class="text-gray-700"
+        />
       {/if}
 
       <!-- Cell coordinate label with background -->
@@ -621,13 +639,17 @@
         />
         <!-- Label -->
         <text
-          x={(leftGuideX + leftGuideEndX) / 2}
-          y={leftGuideY - 10}
+          x={leftGuideEndX - 24}
+          y={leftGuideY}
           fill="#ff4444"
           font-size="14"
           font-weight="600"
-          text-anchor="middle"
+          text-anchor="end"
           font-family="system-ui, -apple-system, sans-serif"
+          dominant-baseline="middle"
+          stroke="white"
+          stroke-width="4"
+          paint-order="stroke"
         >
           {distanceFromLeft.toFixed(1)}m
         </text>
@@ -656,14 +678,16 @@
         />
         <!-- Label -->
         <text
-          x={topGuideX + 15}
-          y={(topGuideY + topGuideEndY) / 2}
+          x={topGuideX}
+          y={topGuideEndY - 24}
           fill="#ff4444"
           font-size="14"
           font-weight="600"
-          text-anchor="start"
+          text-anchor="middle"
           font-family="system-ui, -apple-system, sans-serif"
-          dominant-baseline="middle"
+          stroke="white"
+          stroke-width="4"
+          paint-order="stroke"
         >
           {distanceFromTop.toFixed(1)}m
         </text>
@@ -693,13 +717,17 @@
         />
         <!-- Label -->
         <text
-          x={(rightGuideStartX + rightGuideEndX) / 2}
-          y={rightGuideY - 10}
+          x={rightGuideStartX + 24}
+          y={rightGuideY}
           fill="#ff4444"
           font-size="14"
           font-weight="600"
-          text-anchor="middle"
+          text-anchor="start"
           font-family="system-ui, -apple-system, sans-serif"
+          dominant-baseline="middle"
+          stroke="white"
+          stroke-width="4"
+          paint-order="stroke"
         >
           {distanceFromRight.toFixed(1)}m
         </text>
@@ -729,14 +757,16 @@
         />
         <!-- Label -->
         <text
-          x={bottomGuideX + 15}
-          y={(bottomGuideStartY + bottomGuideEndY) / 2}
+          x={bottomGuideX}
+          y={bottomGuideStartY + 34}
           fill="#ff4444"
           font-size="14"
           font-weight="600"
-          text-anchor="start"
+          text-anchor="middle"
           font-family="system-ui, -apple-system, sans-serif"
-          dominant-baseline="middle"
+          stroke="white"
+          stroke-width="4"
+          paint-order="stroke"
         >
           {distanceFromBottom.toFixed(1)}m
         </text>
