@@ -11,6 +11,8 @@
     CELL_SIZE,
     SVG_SIZE,
     REAL_CELL_SIZE_M,
+    getComponentAtPosition,
+    isPositionOccupied,
   } from "$lib/stores/gridStore";
   import {
     getGridCellFromMouse,
@@ -126,9 +128,7 @@
 
     // Delete mode - remove component at clicked position
     if ($deleteMode) {
-      const component = Array.from($gridStore.components.values()).find(
-        (c) => c.gridX === pos.gridX && c.gridY === pos.gridY,
-      );
+      const component = getComponentAtPosition($gridStore.components, pos.gridX, pos.gridY);
       if (component) {
         gridStore.removeComponent(component.id);
       }
@@ -138,11 +138,7 @@
     // Place component mode
     if ($gridStore.selectedComponentType && !$dragState.isDragging) {
       // Check if position is occupied
-      const occupied = Array.from($gridStore.components.values()).some(
-        (c) => c.gridX === pos.gridX && c.gridY === pos.gridY,
-      );
-
-      if (!occupied) {
+      if (!isPositionOccupied($gridStore.components, pos.gridX, pos.gridY)) {
         const newComponent: Component = {
           id: generateComponentId(),
           type: $gridStore.selectedComponentType,
@@ -183,9 +179,7 @@
       );
 
       if (isValidGridPosition(pos.gridX, pos.gridY)) {
-        const component = Array.from($gridStore.components.values()).find(
-          (c) => c.gridX === pos.gridX && c.gridY === pos.gridY,
-        );
+        const component = getComponentAtPosition($gridStore.components, pos.gridX, pos.gridY);
 
         if (component && component.type !== "invalid") {
           dragState.set({
@@ -218,12 +212,8 @@
 
       if (isValidGridPosition(pos.gridX, pos.gridY)) {
         // Check if target position is occupied
-        const occupied = Array.from($gridStore.components.values()).some(
-          (c) =>
-            c.id !== $dragState.componentId &&
-            c.gridX === pos.gridX &&
-            c.gridY === pos.gridY,
-        );
+        const occupyingComponent = getComponentAtPosition($gridStore.components, pos.gridX, pos.gridY);
+        const occupied = occupyingComponent && occupyingComponent.id !== $dragState.componentId;
 
         if (!occupied) {
           gridStore.updateComponent($dragState.componentId, {
@@ -257,9 +247,7 @@
     );
 
     if (isValidGridPosition(pos.gridX, pos.gridY)) {
-      const component = Array.from($gridStore.components.values()).find(
-        (c) => c.gridX === pos.gridX && c.gridY === pos.gridY,
-      );
+      const component = getComponentAtPosition($gridStore.components, pos.gridX, pos.gridY);
 
       if (component) {
         contextMenuState = {

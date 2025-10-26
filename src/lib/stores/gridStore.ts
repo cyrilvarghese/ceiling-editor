@@ -69,24 +69,7 @@ function createGridStore() {
         translateX: resetTranslateX,
         translateY: resetTranslateY,
       }));
-    },
-    reset: () => {
-      const resetScale = 1.0;
-      const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1920;
-      const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 1080;
-      const scaledGridSize = SVG_SIZE * resetScale;
-
-      const resetTranslateX = (viewportWidth - scaledGridSize) / 2;
-      const resetTranslateY = (viewportHeight - scaledGridSize) / 2;
-
-      return set({
-        scale: resetScale,
-        translateX: resetTranslateX,
-        translateY: resetTranslateY,
-        components: new Map<string, Component>(),
-        selectedComponentType: null,
-      });
-    },
+    }
   };
 }
 
@@ -118,28 +101,25 @@ export const deleteMode = writable<boolean>(false);
 // Smart guides toggle state
 export const showGuides = writable<boolean>(true);
 
-// Derived store: Get component at grid position
-export const getComponentAtPosition = derived(
-  gridStore,
-  $gridStore => (gridX: number, gridY: number): Component | undefined => {
-    for (const component of $gridStore.components.values()) {
-      if (component.gridX === gridX && component.gridY === gridY) {
-        return component;
-      }
+// Helper function: Get component at grid position
+export function getComponentAtPosition(
+  components: Map<string, Component>,
+  gridX: number,
+  gridY: number
+): Component | undefined {
+  for (const component of components.values()) {
+    if (component.gridX === gridX && component.gridY === gridY) {
+      return component;
     }
-    return undefined;
   }
-);
+  return undefined;
+}
 
-// Derived store: Check if position is occupied
-export const isPositionOccupied = derived(
-  gridStore,
-  $gridStore => (gridX: number, gridY: number): boolean => {
-    for (const component of $gridStore.components.values()) {
-      if (component.gridX === gridX && component.gridY === gridY) {
-        return true;
-      }
-    }
-    return false;
-  }
-);
+// Helper function: Check if position is occupied
+export function isPositionOccupied(
+  components: Map<string, Component>,
+  gridX: number,
+  gridY: number
+): boolean {
+  return getComponentAtPosition(components, gridX, gridY) !== undefined;
+}
