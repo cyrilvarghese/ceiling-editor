@@ -2,7 +2,7 @@
   import {
     Lightbulb,
     Wind,
-    RotateCcw,
+    Fan,
     AlarmSmoke,
     CircleSlash2,
     Trash2,
@@ -30,7 +30,7 @@
   {:else if type === "supply"}
     <Wind size={size} />
   {:else if type === "return"}
-    <RotateCcw size={size} />
+    <Fan size={size} />
   {:else if type === "smoke"}
     <AlarmSmoke size={size} />
   {:else if type === "invalid"}

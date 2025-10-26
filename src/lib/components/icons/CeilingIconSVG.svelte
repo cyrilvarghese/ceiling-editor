@@ -2,7 +2,7 @@
   import {
     Lightbulb,
     Wind,
-    RotateCcw,
+    Fan,
     AlarmSmoke,
     CircleSlash2,
   } from "lucide-svelte";
@@ -43,7 +43,7 @@
       {:else if type === "supply"}
         <Wind {size} class={className} style="color: {COMPONENT_INFO[type].iconColor}; {style}" />
       {:else if type === "return"}
-        <RotateCcw {size} class={className} style="color: {COMPONENT_INFO[type].iconColor}; {style}" />
+        <Fan {size} class={className} style="color: {COMPONENT_INFO[type].iconColor}; {style}" />
       {:else if type === "smoke"}
         <AlarmSmoke {size} class={className} style="color: {COMPONENT_INFO[type].iconColor}; {style}" />
       {:else if type === "invalid"}

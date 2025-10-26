@@ -1,6 +1,6 @@
 import type { ComponentType } from '../types';
 import type { Component as LucideComponent } from 'lucide-svelte';
-import { Lightbulb, Wind, RotateCcw, AlarmSmoke, CircleSlash2 } from 'lucide-svelte';
+import { Lightbulb, Wind, Fan, AlarmSmoke, CircleSlash2 } from 'lucide-svelte';
 
 export interface ComponentInfo {
   icon: typeof LucideComponent;
@@ -32,7 +32,7 @@ export const COMPONENT_INFO: Record<ComponentType, ComponentInfo> = {
     selectedBorderColor: '#bbf7d0', // green-200
   },
   return: {
-    icon: RotateCcw,
+    icon: Fan,
     label: 'Air Return',
     description: 'Air return vent',
     bgColor: '#dbeafe', // blue-100

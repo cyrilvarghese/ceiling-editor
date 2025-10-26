@@ -39,9 +39,7 @@
       disabled={$gridStore.scale >= 5}
       aria-label="Zoom in"
     >
-      <div
-        class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center"
-      >
+      <div class="w-5 h-5 rounded-full flex items-center justify-center">
         <Plus size={20} class="w-5 h-5" />
       </div>
     </Button>
@@ -64,9 +62,7 @@
       disabled={$gridStore.scale <= 0.5}
       aria-label="Zoom out"
     >
-      <div
-        class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center"
-      >
+      <div class="w-5 h-5 rounded-full flex items-center justify-center">
         <Minus size={20} class="w-5 h-5" />
       </div>
     </Button>
@@ -80,10 +76,9 @@
       class="w-10 h-10 p-0 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-full transition-colors text-xs font-medium focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
       onclick={resetZoom}
       aria-label="Reset view"
+      title="Reset view"
     >
-      <div
-        class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center"
-      >
+      <div class="w-5 h-5 rounded-full flex items-center justify-center">
         <RotateCcw size={20} class="w-5 h-5" />
       </div>
     </Button>
@@ -96,6 +91,7 @@
       pressed={$showGuides}
       onPressedChange={toggleGuides}
       aria-label="Toggle smart guides"
+      title="Toggle smart guides"
       class="w-10 h-10 p-0 flex items-center justify-center rounded-full transition-colors data-[state=on]:bg-orange-100 data-[state=on]:text-orange-600 bg-gray-100 hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
     >
       <div
