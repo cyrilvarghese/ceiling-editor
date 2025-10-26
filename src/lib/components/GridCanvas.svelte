@@ -30,6 +30,27 @@
   const ICON_SCALE_FACTOR = 0.6; // Icon takes 60% of cell size
   const ICON_CENTER_OFFSET = -12; // Half of base size for centering
 
+  // Highlight colors (SVG fill values - can't use Tailwind classes in SVG attributes)
+  const HIGHLIGHT_COLORS = {
+    transparent: "transparent",
+    delete: "rgba(239, 68, 68, 0.4)", // red-500 with 40% opacity
+    default: "rgba(255, 200, 0, 0.4)", // yellow with 40% opacity
+    opacity: "99", // 60% opacity in hex for component colors
+  } as const;
+
+  // SVG styling constants
+  const SVG_COLORS = {
+    background: "#f5f5f7", // gray-100 - canvas background
+    gridLine: "#d4d4d4", // gray-300 - grid lines
+    gridBorder: "#d1d5db", // gray-300 - grid outer border
+    deleteIcon: "#dc2626", // red-600 - delete X icon
+    gridFill: "white", // white - grid background
+  } as const;
+
+  const SVG_SHADOWS = {
+    grid: "drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.06))",
+  } as const;
+
   let svgContainer = $state<HTMLDivElement>();
   let svgElement = $state<SVGSVGElement>();
   let highlightRect = $state<SVGRectElement>();
@@ -418,14 +439,14 @@
   class="w-full h-full fixed top-0 left-0 overflow-hidden"
   bind:this={svgContainer}
   onclick={closeContextMenu}
-  style="cursor: {cursorStyle};background-color: #f5f5f7;"
+  style="cursor: {cursorStyle};background-color: {SVG_COLORS.background};"
 >
   <svg
     bind:this={svgElement}
     width={SVG_SIZE}
     height={SVG_SIZE}
     class="absolute top-0 left-0"
-    style="transform: {transform}; transform-origin: 0 0; filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.06));"
+    style="transform: {transform}; transform-origin: 0 0; filter: {SVG_SHADOWS.grid};"
     onmousemove={handleMouseMove}
     onmousedown={handleMouseDown}
     onmouseup={handleMouseUp}
@@ -445,7 +466,7 @@
         <path
           d="M {CELL_SIZE} 0 L 0 0 0 {CELL_SIZE}"
           fill="none"
-          stroke="#d4d4d4"
+          stroke={SVG_COLORS.gridLine}
           stroke-width="0.5"
         />
       </pattern>
@@ -455,8 +476,8 @@
     <rect
       width={SVG_SIZE}
       height={SVG_SIZE}
-      fill="white"
-      stroke="#d1d5db"
+      fill={SVG_COLORS.gridFill}
+      stroke={SVG_COLORS.gridBorder}
       stroke-width="2"
     />
     <rect width={SVG_SIZE} height={SVG_SIZE} fill="url(#grid-pattern)" />
@@ -551,13 +572,12 @@
     <!-- Hover highlight (rendered last to appear on top) -->
     {#if currentHighlight.visible}
       {@const selectedType = $gridStore.selectedComponentType}
-      {@const bgColor = $dragState.isDragging
-        ? "transparent"
-        : $deleteMode
-          ? "rgba(239, 68, 68, 0.4)"
-          : selectedType
-            ? `${COMPONENT_INFO[selectedType].bgColor}99`
-            : "rgba(255, 200, 0, 0.4)"}
+      {@const bgColor = (() => {
+        if ($dragState.isDragging) return HIGHLIGHT_COLORS.transparent;
+        if ($deleteMode) return HIGHLIGHT_COLORS.delete;
+        if (selectedType) return `${COMPONENT_INFO[selectedType].bgColor}${HIGHLIGHT_COLORS.opacity}`;
+        return HIGHLIGHT_COLORS.default;
+      })()}
 
       <rect
         bind:this={highlightRect}
@@ -582,7 +602,7 @@
           <path
             d="M18 6L6 18M6 6l12 12"
             fill="none"
-            stroke="#dc2626"
+            stroke={SVG_COLORS.deleteIcon}
             stroke-width="3"
             stroke-linecap="round"
             stroke-linejoin="round"

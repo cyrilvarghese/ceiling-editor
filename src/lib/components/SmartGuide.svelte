@@ -3,6 +3,10 @@
    * SmartGuide - Reusable component for distance measurement guides
    * Renders a line with distance label from grid edge to highlighted cell
    */
+
+  // Guide styling constants
+  const GUIDE_COLOR = "#fb923c"; // orange-400 - guide line and text color
+
   let {
     orientation,
     startX,
@@ -57,7 +61,7 @@
     y1={startY}
     x2={endX}
     y2={endY}
-    stroke="#fb923c"
+    stroke={GUIDE_COLOR}
     stroke-width="2"
     opacity="0.4"
   />
@@ -66,7 +70,7 @@
   <text
     x={labelX}
     y={labelY}
-    fill="#fb923c"
+    fill={GUIDE_COLOR}
     font-size="14"
     font-weight="600"
     text-anchor={textAnchor}

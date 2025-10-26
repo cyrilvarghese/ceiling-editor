@@ -9,6 +9,13 @@
   import { generateComponentId } from "$lib/utils/components";
   import type { ComponentType } from "$lib/types";
 
+  // FPS color thresholds
+  const FPS_COLORS = {
+    good: "#10b981", // green-500 - 55+ fps
+    moderate: "#f59e0b", // amber-500 - 30-54 fps
+    poor: "#ef4444", // red-500 - <30 fps
+  } as const;
+
   // FPS tracking
   let fps = $state(0);
   let frameCount = $state(0);
@@ -39,7 +46,7 @@
 
   // FPS color coding
   let fpsColor = $derived(
-    fps >= 55 ? "#10b981" : fps >= 30 ? "#f59e0b" : "#ef4444",
+    fps >= 55 ? FPS_COLORS.good : fps >= 30 ? FPS_COLORS.moderate : FPS_COLORS.poor,
   );
 
   // Test data generator
