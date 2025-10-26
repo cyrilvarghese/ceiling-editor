@@ -21,29 +21,19 @@
   } from "$lib/utils/coordinates";
   import { COMPONENT_INFO, generateComponentId } from "$lib/utils/components";
   import { Button } from "$lib/components/ui/button";
-  import CeilingIconSVG from "$lib/components/icons/CeilingIconSVG.svelte";
   import SmartGuide from "$lib/components/SmartGuide.svelte";
+  import ContextMenu from "$lib/components/grid/ContextMenu.svelte";
+  import PanningIndicator from "$lib/components/grid/PanningIndicator.svelte";
+  import DragGhost from "$lib/components/grid/DragGhost.svelte";
+  import HighlightOverlay from "$lib/components/grid/HighlightOverlay.svelte";
+  import ComponentRenderer from "$lib/components/grid/ComponentRenderer.svelte";
   import type { Component } from "$lib/types";
-
-  // Icon rendering constants
-  const ICON_BASE_SIZE = 24; // Lucide icons are 24x24
-  const ICON_SCALE_FACTOR = 0.6; // Icon takes 60% of cell size
-  const ICON_CENTER_OFFSET = -12; // Half of base size for centering
-
-  // Highlight colors (SVG fill values - can't use Tailwind classes in SVG attributes)
-  const HIGHLIGHT_COLORS = {
-    transparent: "transparent",
-    delete: "rgba(239, 68, 68, 0.4)", // red-500 with 40% opacity
-    default: "rgba(255, 200, 0, 0.4)", // yellow with 40% opacity
-    opacity: "99", // 60% opacity in hex for component colors
-  } as const;
 
   // SVG styling constants
   const SVG_COLORS = {
     background: "#f5f5f7", // gray-100 - canvas background
     gridLine: "#d4d4d4", // gray-300 - grid lines
     gridBorder: "#d1d5db", // gray-300 - grid outer border
-    deleteIcon: "#dc2626", // red-600 - delete X icon
     gridFill: "white", // white - grid background
   } as const;
 
@@ -53,8 +43,6 @@
 
   let svgContainer = $state<HTMLDivElement>();
   let svgElement = $state<SVGSVGElement>();
-  let highlightRect = $state<SVGRectElement>();
-  let contextMenu = $state<HTMLDivElement>();
 
   let currentHighlight = $state({ gridX: -1, gridY: -1, visible: false });
   let contextMenuState = $state({
@@ -80,13 +68,6 @@
           ? "crosshair"
           : "default",
   );
-
-  // Derived values for delete mode icon transform (improves readability)
-  let deleteIconTransform = $derived({
-    x: currentHighlight.gridX * CELL_SIZE + CELL_SIZE / 2,
-    y: currentHighlight.gridY * CELL_SIZE + CELL_SIZE / 2,
-    scale: (CELL_SIZE * ICON_SCALE_FACTOR) / ICON_BASE_SIZE,
-  });
 
   // Handle mousemove with requestAnimationFrame throttling
   function handleMouseMove(event: MouseEvent) {
@@ -484,143 +465,34 @@
 
     <!-- Components -->
     {#each Array.from($gridStore.components.values()) as component (component.id)}
-      {#if component.type === "invalid"}
-        <!-- Invalid marker: gray square -->
-        <g
-          style="cursor: not-allowed; user-select: none;"
-          transform="translate({component.gridX * CELL_SIZE}, {component.gridY *
-            CELL_SIZE})"
-        >
-          <title>{COMPONENT_INFO[component.type].label}</title>
-          <CeilingIconSVG
-            type={component.type}
-            size={CELL_SIZE}
-            x={0}
-            y={0}
-            class="text-gray-700"
-          />
-        </g>
-      {:else}
-        <!-- Normal component with icon -->
-        {#if $dragState.isDragging && $dragState.componentId === component.id}
-          <!-- Original position (faded) -->
-          <g
-            style="cursor: move; user-select: none; opacity: 0.2;"
-            transform="translate({component.gridX *
-              CELL_SIZE}, {component.gridY * CELL_SIZE})"
-          >
-            <title
-              >{$deleteMode
-                ? `Click to Delete ${COMPONENT_INFO[component.type].label}`
-                : COMPONENT_INFO[component.type].label}</title
-            >
-            <CeilingIconSVG
-              type={component.type}
-              size={CELL_SIZE}
-              x={0}
-              y={0}
-              class="text-gray-700"
-            />
-          </g>
-        {:else}
-          <!-- Normal component -->
-          <g
-            style="cursor: {$deleteMode
-              ? 'pointer'
-              : 'move'}; user-select: none;"
-            transform="translate({component.gridX *
-              CELL_SIZE}, {component.gridY * CELL_SIZE})"
-          >
-            <title
-              >{$deleteMode
-                ? `Click to Delete ${COMPONENT_INFO[component.type].label}`
-                : COMPONENT_INFO[component.type].label}</title
-            >
-            <CeilingIconSVG
-              type={component.type}
-              size={CELL_SIZE}
-              x={0}
-              y={0}
-              class="text-gray-700"
-            />
-          </g>
-        {/if}
-      {/if}
+      <ComponentRenderer
+        {component}
+        cellSize={CELL_SIZE}
+        isDragging={$dragState.isDragging}
+        isDraggedComponent={$dragState.isDragging && $dragState.componentId === component.id}
+        isDeleteMode={$deleteMode}
+      />
     {/each}
 
     <!-- Ghost component following cursor during drag -->
     {#if $dragState.isDragging && $dragState.componentId}
-      {@const draggedComponent = $gridStore.components.get(
-        $dragState.componentId,
-      )}
-      {#if draggedComponent}
-        <g
-          style="pointer-events: none; user-select: none; opacity: 0.7;"
-          transform="translate({ghostPosition.svgX}, {ghostPosition.svgY}) scale(1.5)"
-        >
-          <CeilingIconSVG
-            type={draggedComponent.type}
-            size={12}
-            x={-6}
-            y={-6}
-            class="text-gray-700"
-          />
-        </g>
-      {/if}
+      <DragGhost
+        component={$gridStore.components.get($dragState.componentId)}
+        svgX={ghostPosition.svgX}
+        svgY={ghostPosition.svgY}
+      />
     {/if}
 
     <!-- Hover highlight (rendered last to appear on top) -->
-    {#if currentHighlight.visible}
-      {@const selectedType = $gridStore.selectedComponentType}
-      {@const bgColor = (() => {
-        if ($dragState.isDragging) return HIGHLIGHT_COLORS.transparent;
-        if ($deleteMode) return HIGHLIGHT_COLORS.delete;
-        if (selectedType) return `${COMPONENT_INFO[selectedType].bgColor}${HIGHLIGHT_COLORS.opacity}`;
-        return HIGHLIGHT_COLORS.default;
-      })()}
-
-      <rect
-        bind:this={highlightRect}
-        x={currentHighlight.gridX * CELL_SIZE}
-        y={currentHighlight.gridY * CELL_SIZE}
-        width={CELL_SIZE}
-        height={CELL_SIZE}
-        fill={bgColor}
-        stroke={$dragState.isDragging ? "black" : "none"}
-        stroke-width={$dragState.isDragging ? "2" : "0"}
-        pointer-events="none"
-      />
-
-      <!-- Icon in highlight -->
-      {#if $deleteMode}
-        <!-- Native SVG X icon -->
-        <g
-          transform="translate({deleteIconTransform.x}, {deleteIconTransform.y}) scale({deleteIconTransform.scale})"
-          opacity="0.5"
-          pointer-events="none"
-        >
-          <path
-            d="M18 6L6 18M6 6l12 12"
-            fill="none"
-            stroke={SVG_COLORS.deleteIcon}
-            stroke-width="3"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            transform="translate({ICON_CENTER_OFFSET}, {ICON_CENTER_OFFSET})"
-          />
-        </g>
-      {:else if selectedType && !$dragState.isDragging}
-        <g opacity="0.4">
-          <CeilingIconSVG
-            type={selectedType}
-            size={CELL_SIZE}
-            x={currentHighlight.gridX * CELL_SIZE}
-            y={currentHighlight.gridY * CELL_SIZE}
-            class="text-gray-700"
-          />
-        </g>
-      {/if}
-    {/if}
+    <HighlightOverlay
+      visible={currentHighlight.visible}
+      gridX={currentHighlight.gridX}
+      gridY={currentHighlight.gridY}
+      cellSize={CELL_SIZE}
+      isDragging={$dragState.isDragging}
+      isDeleteMode={$deleteMode}
+      selectedType={$gridStore.selectedComponentType}
+    />
   </svg>
 
   <!-- Smart guides for distance measurements -->
@@ -710,33 +582,13 @@
   {/if}
 
   <!-- Context menu -->
-  {#if contextMenuState.visible}
-    <div
-      bind:this={contextMenu}
-      role="menu"
-      aria-label="Component options"
-      class="fixed bg-white border border-gray-300 rounded-md shadow-lg py-1 z-50"
-      style="left: {contextMenuState.x}px; top: {contextMenuState.y}px;"
-    >
-      <Button
-        variant="ghost"
-        role="menuitem"
-        class="w-full px-4 py-2 justify-start text-left hover:bg-gray-100 text-sm h-auto focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset"
-        onclick={deleteComponent}
-      >
-        Delete Component
-      </Button>
-    </div>
-  {/if}
+  <ContextMenu
+    visible={contextMenuState.visible}
+    x={contextMenuState.x}
+    y={contextMenuState.y}
+    onDelete={deleteComponent}
+  />
 
   <!-- Panning indicator -->
-  {#if $panState.isPanning}
-    <div
-      role="status"
-      aria-live="polite"
-      class="fixed top-5 left-1/2 -translate-x-1/2 bg-black/75 text-white px-4 py-2 rounded-md"
-    >
-      Panning...
-    </div>
-  {/if}
+  <PanningIndicator visible={$panState.isPanning} />
 </div>
