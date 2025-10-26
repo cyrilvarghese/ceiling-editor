@@ -69,7 +69,12 @@ function createGridStore() {
         translateX: resetTranslateX,
         translateY: resetTranslateY,
       }));
-    }
+    },
+    clearAllComponents: () =>
+      update(state => ({
+        ...state,
+        components: new Map<string, Component>(),
+      }))
   };
 }
 

@@ -17,14 +17,11 @@
   import {
     getGridCellFromMouse,
     isValidGridPosition,
-    gridToPixel,
-    getGridCellCenter,
     calculateZoomToPoint,
   } from "$lib/utils/coordinates";
   import { COMPONENT_INFO, generateComponentId } from "$lib/utils/components";
   import { Button } from "$lib/components/ui/button";
   import CeilingIconSVG from "$lib/components/icons/CeilingIconSVG.svelte";
-  import { X } from "lucide-svelte";
   import type { Component } from "$lib/types";
 
   let svgContainer = $state<HTMLDivElement>();
@@ -66,6 +63,9 @@
     rafPending = true;
 
     requestAnimationFrame(() => {
+      const frameStart = performance.now();
+      performance.mark('mousemove-start');
+
       const pos = getGridCellFromMouse(
         { clientX: lastMouseX, clientY: lastMouseY } as MouseEvent,
         svgContainer as unknown as HTMLElement,
@@ -105,6 +105,20 @@
         } else {
           currentHighlight.visible = false;
         }
+      }
+
+      performance.mark('mousemove-end');
+      const frameEnd = performance.now();
+      const frameTime = frameEnd - frameStart;
+
+      performance.measure('MouseMove RAF', 'mousemove-start', 'mousemove-end');
+
+      // Log slow frames to console
+      if (frameTime > 16) {
+        console.warn(
+          `[PERF] Slow mousemove frame: ${frameTime.toFixed(2)}ms ` +
+          `(Target: <16ms for 60fps, Components: ${$gridStore.components.size})`
+        );
       }
 
       rafPending = false;
@@ -270,6 +284,8 @@
 
   // Process zoom in animation frame
   function processZoom() {
+    performance.mark('zoom-start');
+
     if (!pendingZoomData) {
       rafId = null;
       return;
@@ -288,6 +304,9 @@
 
     gridStore.setScale(newScale);
     gridStore.setTranslate(translateX, translateY);
+
+    performance.mark('zoom-end');
+    performance.measure('Zoom RAF', 'zoom-start', 'zoom-end');
 
     rafId = null;
     pendingZoomData = null;
@@ -526,11 +545,6 @@
           : selectedType
             ? `${COMPONENT_INFO[selectedType].bgColor}99`
             : "rgba(255, 200, 0, 0.4)"}
-      {@const strokeColor = $deleteMode
-        ? "#dc2626"
-        : selectedType
-          ? COMPONENT_INFO[selectedType].iconColor
-          : "#000"}
 
       <rect
         bind:this={highlightRect}
@@ -546,17 +560,22 @@
 
       <!-- Icon in highlight -->
       {#if $deleteMode}
-        <foreignObject
-          x={currentHighlight.gridX * CELL_SIZE}
-          y={currentHighlight.gridY * CELL_SIZE}
-          width={CELL_SIZE}
-          height={CELL_SIZE}
+        <!-- Native SVG X icon -->
+        <g
+          transform="translate({currentHighlight.gridX * CELL_SIZE + CELL_SIZE / 2}, {currentHighlight.gridY * CELL_SIZE + CELL_SIZE / 2}) scale({(CELL_SIZE * 0.6) / 24})"
+          opacity="0.5"
           pointer-events="none"
         >
-          <div class="flex items-center justify-center w-full h-full">
-            <X size={CELL_SIZE * 0.6} style="color: #dc2626; opacity: 0.5;" strokeWidth={3} />
-          </div>
-        </foreignObject>
+          <path
+            d="M18 6L6 18M6 6l12 12"
+            fill="none"
+            stroke="#dc2626"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            transform="translate(-12, -12)"
+          />
+        </g>
       {:else if selectedType && !$dragState.isDragging}
         <g opacity="0.4">
           <CeilingIconSVG
