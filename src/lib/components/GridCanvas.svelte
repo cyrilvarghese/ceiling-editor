@@ -60,6 +60,8 @@
   let transform = $derived(
     `translate(${$gridStore.translateX}px, ${$gridStore.translateY}px) scale(${$gridStore.scale})`,
   );
+
+
   let cursorStyle = $derived(
     $panState.isPanning
       ? "grabbing"

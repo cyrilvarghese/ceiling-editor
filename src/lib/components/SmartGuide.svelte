@@ -81,6 +81,7 @@
     stroke="white"
     stroke-width="4"
     paint-order="stroke"
+    style="user-select: none; -webkit-user-select: none;"
   >
     {distance.toFixed(1)}m
   </text>
