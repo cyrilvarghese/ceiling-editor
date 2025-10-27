@@ -20,6 +20,7 @@
     calculateZoomToPoint,
   } from "$lib/utils/coordinates";
   import { COMPONENT_INFO, generateComponentId } from "$lib/utils/components";
+  import { generateSmartGuides } from "$lib/utils/smartGuides";
   import { Button } from "$lib/components/ui/button";
   import SmartGuide from "$lib/components/SmartGuide.svelte";
   import ContextMenu from "$lib/components/grid/ContextMenu.svelte";
@@ -33,7 +34,7 @@
   const SVG_COLORS = {
     background: "#f5f5f7", // gray-100 - canvas background
     gridLine: "#d4d4d4", // gray-300 - grid lines
-    gridBorder: "#d1d5db", // gray-300 - grid outer border
+    gridBorder: "#d4d4d4", // gray-300 - grid outer border
     gridFill: "white", // white - grid background
   } as const;
 
@@ -69,6 +70,22 @@
           : "default",
   );
 
+  // Generate smart guide data
+  let smartGuides = $derived(
+    currentHighlight.visible && $showGuides && !$deleteMode
+      ? generateSmartGuides(
+          currentHighlight.gridX,
+          currentHighlight.gridY,
+          GRID_SIZE,
+          {
+            translateX: $gridStore.translateX,
+            translateY: $gridStore.translateY,
+            scale: $gridStore.scale,
+          }
+        )
+      : []
+  );
+
   // Handle mousemove with requestAnimationFrame throttling
   function handleMouseMove(event: MouseEvent) {
     lastMouseX = event.clientX;
@@ -79,7 +96,7 @@
 
     requestAnimationFrame(() => {
       const frameStart = performance.now();
-      performance.mark('mousemove-start');
+      performance.mark("mousemove-start");
 
       const pos = getGridCellFromMouse(
         { clientX: lastMouseX, clientY: lastMouseY } as MouseEvent,
@@ -122,17 +139,17 @@
         }
       }
 
-      performance.mark('mousemove-end');
+      performance.mark("mousemove-end");
       const frameEnd = performance.now();
       const frameTime = frameEnd - frameStart;
 
-      performance.measure('MouseMove RAF', 'mousemove-start', 'mousemove-end');
+      performance.measure("MouseMove RAF", "mousemove-start", "mousemove-end");
 
       // Log slow frames to console
       if (frameTime > 16) {
         console.warn(
           `[PERF] Slow mousemove frame: ${frameTime.toFixed(2)}ms ` +
-          `(Target: <16ms for 60fps, Components: ${$gridStore.components.size})`
+            `(Target: <16ms for 60fps, Components: ${$gridStore.components.size})`,
         );
       }
 
@@ -157,7 +174,11 @@
 
     // Delete mode - remove component at clicked position
     if ($deleteMode) {
-      const component = getComponentAtPosition($gridStore.components, pos.gridX, pos.gridY);
+      const component = getComponentAtPosition(
+        $gridStore.components,
+        pos.gridX,
+        pos.gridY,
+      );
       if (component) {
         gridStore.removeComponent(component.id);
       }
@@ -208,7 +229,11 @@
       );
 
       if (isValidGridPosition(pos.gridX, pos.gridY)) {
-        const component = getComponentAtPosition($gridStore.components, pos.gridX, pos.gridY);
+        const component = getComponentAtPosition(
+          $gridStore.components,
+          pos.gridX,
+          pos.gridY,
+        );
 
         if (component && component.type !== "invalid") {
           dragState.set({
@@ -241,8 +266,14 @@
 
       if (isValidGridPosition(pos.gridX, pos.gridY)) {
         // Check if target position is occupied
-        const occupyingComponent = getComponentAtPosition($gridStore.components, pos.gridX, pos.gridY);
-        const occupied = occupyingComponent && occupyingComponent.id !== $dragState.componentId;
+        const occupyingComponent = getComponentAtPosition(
+          $gridStore.components,
+          pos.gridX,
+          pos.gridY,
+        );
+        const occupied =
+          occupyingComponent &&
+          occupyingComponent.id !== $dragState.componentId;
 
         if (!occupied) {
           gridStore.updateComponent($dragState.componentId, {
@@ -276,7 +307,11 @@
     );
 
     if (isValidGridPosition(pos.gridX, pos.gridY)) {
-      const component = getComponentAtPosition($gridStore.components, pos.gridX, pos.gridY);
+      const component = getComponentAtPosition(
+        $gridStore.components,
+        pos.gridX,
+        pos.gridY,
+      );
 
       if (component) {
         contextMenuState = {
@@ -299,7 +334,7 @@
 
   // Process zoom in animation frame
   function processZoom() {
-    performance.mark('zoom-start');
+    performance.mark("zoom-start");
 
     if (!pendingZoomData) {
       rafId = null;
@@ -320,8 +355,8 @@
     gridStore.setScale(newScale);
     gridStore.setTranslate(translateX, translateY);
 
-    performance.mark('zoom-end');
-    performance.measure('Zoom RAF', 'zoom-start', 'zoom-end');
+    performance.mark("zoom-end");
+    performance.measure("Zoom RAF", "zoom-start", "zoom-end");
 
     rafId = null;
     pendingZoomData = null;
@@ -469,7 +504,8 @@
         {component}
         cellSize={CELL_SIZE}
         isDragging={$dragState.isDragging}
-        isDraggedComponent={$dragState.isDragging && $dragState.componentId === component.id}
+        isDraggedComponent={$dragState.isDragging &&
+          $dragState.componentId === component.id}
         isDeleteMode={$deleteMode}
       />
     {/each}
@@ -496,90 +532,18 @@
   </svg>
 
   <!-- Smart guides for distance measurements -->
-  {#if currentHighlight.visible && $showGuides && !$deleteMode}
-    {@const screenX =
-      $gridStore.translateX +
-      (currentHighlight.gridX * CELL_SIZE + CELL_SIZE / 2) * $gridStore.scale}
-    {@const screenY =
-      $gridStore.translateY +
-      (currentHighlight.gridY * CELL_SIZE + CELL_SIZE / 2) * $gridStore.scale}
-    {@const cellX = currentHighlight.gridX}
-    {@const cellY = currentHighlight.gridY}
-    {@const distanceFromLeft = cellX * REAL_CELL_SIZE_M}
-    {@const distanceFromTop = cellY * REAL_CELL_SIZE_M}
-    {@const distanceFromRight = (GRID_SIZE - cellX - 1) * REAL_CELL_SIZE_M}
-    {@const distanceFromBottom = (GRID_SIZE - cellY - 1) * REAL_CELL_SIZE_M}
-
-    <!-- Smart guide - Distance from left (horizontal) -->
-    {#if cellX > 0}
-      {@const leftGuideX = $gridStore.translateX}
-      {@const leftGuideEndX =
-        $gridStore.translateX + cellX * CELL_SIZE * $gridStore.scale}
-      {@const leftGuideY = screenY}
-      <SmartGuide
-        orientation="horizontal"
-        startX={leftGuideX}
-        startY={leftGuideY}
-        endX={leftGuideEndX}
-        endY={leftGuideY}
-        distance={distanceFromLeft}
-        labelOffsetX={-24}
-      />
-    {/if}
-
-    <!-- Smart guide - Distance from top (vertical) -->
-    {#if cellY > 0}
-      {@const topGuideY = $gridStore.translateY}
-      {@const topGuideEndY =
-        $gridStore.translateY + cellY * CELL_SIZE * $gridStore.scale}
-      {@const topGuideX = screenX}
-      <SmartGuide
-        orientation="vertical"
-        startX={topGuideX}
-        startY={topGuideY}
-        endX={topGuideX}
-        endY={topGuideEndY}
-        distance={distanceFromTop}
-        labelOffsetY={-24}
-      />
-    {/if}
-
-    <!-- Smart guide - Distance from right (horizontal) -->
-    {#if cellX < GRID_SIZE - 1}
-      {@const rightGuideStartX =
-        $gridStore.translateX + (cellX + 1) * CELL_SIZE * $gridStore.scale}
-      {@const rightGuideEndX =
-        $gridStore.translateX + GRID_SIZE * CELL_SIZE * $gridStore.scale}
-      {@const rightGuideY = screenY}
-      <SmartGuide
-        orientation="horizontal"
-        startX={rightGuideStartX}
-        startY={rightGuideY}
-        endX={rightGuideEndX}
-        endY={rightGuideY}
-        distance={distanceFromRight}
-        labelOffsetX={24}
-      />
-    {/if}
-
-    <!-- Smart guide - Distance from bottom (vertical) -->
-    {#if cellY < GRID_SIZE - 1}
-      {@const bottomGuideStartY =
-        $gridStore.translateY + (cellY + 1) * CELL_SIZE * $gridStore.scale}
-      {@const bottomGuideEndY =
-        $gridStore.translateY + GRID_SIZE * CELL_SIZE * $gridStore.scale}
-      {@const bottomGuideX = screenX}
-      <SmartGuide
-        orientation="vertical"
-        startX={bottomGuideX}
-        startY={bottomGuideStartY}
-        endX={bottomGuideX}
-        endY={bottomGuideEndY}
-        distance={distanceFromBottom}
-        labelOffsetY={34}
-      />
-    {/if}
-  {/if}
+  {#each smartGuides as guide (guide.orientation + guide.startX + guide.startY)}
+    <SmartGuide
+      orientation={guide.orientation}
+      startX={guide.startX}
+      startY={guide.startY}
+      endX={guide.endX}
+      endY={guide.endY}
+      distance={guide.distance}
+      labelOffsetX={guide.labelOffsetX}
+      labelOffsetY={guide.labelOffsetY}
+    />
+  {/each}
 
   <!-- Context menu -->
   <ContextMenu

@@ -28,15 +28,17 @@
   } = $props();
 
   // Calculate label position based on orientation
+  // For positive offsets (right/bottom), position near start (near cell)
+  // For negative offsets (left/top), position near end (near cell)
   const labelX = $derived(
     orientation === "horizontal"
-      ? endX + labelOffsetX
+      ? (labelOffsetX > 0 ? startX + labelOffsetX : endX + labelOffsetX)
       : (startX + endX) / 2 + labelOffsetX
   );
 
   const labelY = $derived(
     orientation === "vertical"
-      ? endY + labelOffsetY
+      ? (labelOffsetY > 0 ? startY + labelOffsetY : endY + labelOffsetY)
       : (startY + endY) / 2 + labelOffsetY
   );
 
